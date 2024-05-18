@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.kiwiproject</groupId>
+        <artifactId>kiwi-parent</artifactId>
+        <version>3.0.14</version>
+    </parent>
+
+    <artifactId>curator-lock-helper-experimental</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Curator Lock Helper Experimental</name>
+    <description>
+        Experimental implementation of "A modern CuratorLockHelper using Java 17 sealed classes"
+        from the dropwizard-curator library.
+
+        See https://github.com/kiwiproject/dropwizard-curator/discussions/290
+    </description>
+    <url>https://github.com/sleberknight/curator-lock-helper-experimental</url>
+    <inceptionYear>2024</inceptionYear>
+
+    <scm>
+        <connection>scm:git:https://github.com/sleberknight/curator-lock-helper-experimental.git</connection>
+        <developerConnection>scm:git:git@github.com:sleberknight/curator-lock-helper-experimental.git</developerConnection>
+        <url>https://github.com/sleberknight/curator-lock-helper-experimental</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <kiwi-bom.version>2.0.11</kiwi-bom.version>
+
+        <!-- Versions for required/provided dependencies -->
+
+        <!-- Versions for optional dependencies -->
+
+        <!-- Versions for test dependencies -->
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>kiwi-bom</artifactId>
+                <version>${kiwi-bom.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <!-- required dependencies -->
+
+        <!-- provided dependencies -->
+
+        <!-- optional dependencies -->
+
+        <!-- test dependencies -->
+
+    </dependencies>
+
+</project>
