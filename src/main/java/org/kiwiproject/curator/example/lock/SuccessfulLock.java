@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 public class SuccessfulLock implements InterProcessLock {
     @Override
     public void acquire() throws Exception {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("We should not be calling this blocking acquire!");
     }
 
     @Override
