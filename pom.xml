@@ -30,12 +30,14 @@
 
     <properties>
         <kiwi-bom.version>2.0.11</kiwi-bom.version>
+        <kiwi.version>3.4.0</kiwi.version>
 
         <!-- Versions for required/provided dependencies -->
 
         <!-- Versions for optional dependencies -->
 
         <!-- Versions for test dependencies -->
+        <kiwi-test.version>3.3.0</kiwi-test.version>
 
     </properties>
 
@@ -48,6 +50,18 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>kiwi</artifactId>
+                <version>${kiwi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.kiwiproject</groupId>
+                <artifactId>kiwi-test</artifactId>
+                <version>${kiwi-test.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -55,11 +69,27 @@
 
         <!-- required dependencies -->
 
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kiwiproject</groupId>
+            <artifactId>kiwi</artifactId>
+        </dependency>
+
         <!-- provided dependencies -->
 
         <!-- optional dependencies -->
 
         <!-- test dependencies -->
+
+        <dependency>
+            <groupId>org.kiwiproject</groupId>
+            <artifactId>kiwi-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
