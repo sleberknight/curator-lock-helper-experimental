@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class CuratorLockHelper2 {
 
     public LockAcquisitionResult acquire(InterProcessLock lock, long time, TimeUnit unit) {
-        boolean acquired = true;
+        var acquired = true;
         try {
             acquired = lock.acquire(time, unit);
         } catch (Exception e) {
