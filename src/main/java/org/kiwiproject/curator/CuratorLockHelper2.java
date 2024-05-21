@@ -15,6 +15,11 @@ import java.util.function.Supplier;
 @Slf4j
 public class CuratorLockHelper2 {
 
+    public LockAcquisitionResult acquire(InterProcessLock lock, Duration timeout) {
+        var nanos = timeout.toNanos();
+        return acquire(lock, nanos, TimeUnit.NANOSECONDS);
+    }
+
     public LockAcquisitionResult acquire(InterProcessLock lock, long time, TimeUnit unit) {
         var acquired = true;
         try {
@@ -58,6 +63,11 @@ public class CuratorLockHelper2 {
         }
     }
 
+    public UseLockResult useLock(InterProcessLock lock, Duration timeout, Runnable action) {
+        var nanos = timeout.toNanos();
+        return useLock(lock, nanos, TimeUnit.NANOSECONDS, action);
+    }
+
     public UseLockResult useLock(InterProcessLock lock, long time, TimeUnit unit, Runnable action) {
         try {
             var acquisitionResult = acquire(lock, time, unit);
@@ -76,6 +86,14 @@ public class CuratorLockHelper2 {
         } finally {
             releaseLockQuietlyIfHeld(lock);
         }
+    }
+
+    public void useLock(InterProcessLock lock,
+                        Duration timeout,
+                        Runnable action,
+                        Consumer<UseLockError> errorConsumer) {
+        var nanos = timeout.toNanos();
+        useLock(lock, nanos, TimeUnit.NANOSECONDS, action, errorConsumer);
     }
 
     public void useLock(InterProcessLock lock,
@@ -101,6 +119,11 @@ public class CuratorLockHelper2 {
         } finally {
             releaseLockQuietlyIfHeld(lock);
         }
+    }
+
+    public <R> WithLockResult<R> withLock(InterProcessLock lock, Duration timeout, Supplier<R> supplier) {
+        var nanos = timeout.toNanos();
+        return withLock(lock, nanos, TimeUnit.NANOSECONDS, supplier);
     }
 
     public <R> WithLockResult<R> withLock(InterProcessLock lock, long time, TimeUnit unit, Supplier<R> supplier) {

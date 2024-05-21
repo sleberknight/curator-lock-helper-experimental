@@ -77,6 +77,17 @@ class CuratorLockHelper2Test {
 
             verify(lock, only()).acquire(10, TimeUnit.SECONDS);
         }
+
+        @Test
+        void shouldAcceptDuration() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(true);
+
+            var timeout = Duration.ofSeconds(5);
+            var lockAcquisitionResult = lockHelper.acquire(lock, timeout);
+            assertThat(lockAcquisitionResult).isExactlyInstanceOf(LockAcquisitionResult.Success.class);
+
+            verify(lock, only()).acquire(timeout.toNanos(), TimeUnit.NANOSECONDS);
+        }
     }
 
     @Nested
@@ -220,6 +231,21 @@ class CuratorLockHelper2Test {
             verify(lock).release();
             verifyNoMoreInteractions(lock);
         }
+
+        @Test
+        void shouldAcceptDuration() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(true);
+            when(lock.isAcquiredInThisProcess()).thenReturn(true);
+
+            var timeout = Duration.ofSeconds(3);
+            var result = lockHelper.useLock(lock, timeout, new TrackingRunnable());
+            assertThat(result).isInstanceOf(UseLockResult.Success.class);
+
+            verify(lock).acquire(timeout.toNanos(), TimeUnit.NANOSECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verify(lock).release();
+            verifyNoMoreInteractions(lock);
+        }
     }
 
     @Nested
@@ -320,6 +346,25 @@ class CuratorLockHelper2Test {
             verify(lock).release();
             verifyNoMoreInteractions(lock);
         }
+
+        @Test
+        void shouldAcceptDuration() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(true);
+            when(lock.isAcquiredInThisProcess()).thenReturn(true);
+
+            var timeout = Duration.ofSeconds(3);
+            var action = new TrackingRunnable();
+            var errorConsumer = new TrackingConsumer();
+            lockHelper.useLock(lock, timeout, action, errorConsumer);
+
+            assertThat(action.wasCalled).isTrue();
+            assertThat(errorConsumer.wasCalled).isFalse();
+
+            verify(lock).acquire(timeout.toNanos(), TimeUnit.NANOSECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verify(lock).release();
+            verifyNoMoreInteractions(lock);
+        }
     }
 
     @Nested
@@ -404,6 +449,26 @@ class CuratorLockHelper2Test {
 
 
             verify(lock).acquire(5, TimeUnit.SECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verify(lock).release();
+            verifyNoMoreInteractions(lock);
+        }
+
+        @Test
+        void shouldAcceptDuration() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(true);
+            when(lock.isAcquiredInThisProcess()).thenReturn(true);
+
+            var timeout = Duration.ofSeconds(2);
+            var number = 84L;
+            var supplier = new TrackingSupplier(number);
+            var result = lockHelper.withLock(lock, timeout, supplier);
+
+            var successResult = assertIsExactType(result, WithLockResult.Success.class);
+            assertThat(successResult.result()).isEqualTo(number);
+            assertThat(supplier.wasCalled).isTrue();
+
+            verify(lock).acquire(timeout.toNanos(), TimeUnit.NANOSECONDS);
             verify(lock).isAcquiredInThisProcess();
             verify(lock).release();
             verifyNoMoreInteractions(lock);
