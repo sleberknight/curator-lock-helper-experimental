@@ -9,6 +9,7 @@ import org.apache.curator.framework.recipes.locks.InterProcessLock;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -72,6 +73,31 @@ public class CuratorLockHelper2 {
 
             var failureResult = LockAcquisitionFailureResult.fromLockAcquisitionResult(acquisitionResult);
             return new UseLockResult.LockAcquisitionFailure(failureResult);
+        } finally {
+            releaseLockQuietlyIfHeld(lock);
+        }
+    }
+
+    public void useLock(InterProcessLock lock,
+                        long time, TimeUnit unit,
+                        Runnable action,
+                        Consumer<LockOrActionError> errorConsumer) {
+
+        try {
+            var acquisitionResult = acquire(lock, time, unit);
+
+            if (acquisitionResult instanceof LockAcquisitionResult.Success) {
+                try {
+                    action.run();
+                } catch (Exception e) {
+                    errorConsumer.accept(new LockOrActionError.ActionFailure(e));
+                }
+
+                return;
+            }
+
+            var failureResult = LockAcquisitionFailureResult.fromLockAcquisitionResult(acquisitionResult);
+            errorConsumer.accept(new LockOrActionError.LockAcquisitionFailure(failureResult));
         } finally {
             releaseLockQuietlyIfHeld(lock);
         }

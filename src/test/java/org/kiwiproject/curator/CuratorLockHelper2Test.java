@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @DisplayName("CuratorLockHelper2")
@@ -206,8 +207,8 @@ class CuratorLockHelper2Test {
             var action = new ThrowingRunnable();
             var result = lockHelper.useLock(lock, 1, TimeUnit.SECONDS, action);
 
-            var lockAcquisitionFailure = assertIsExactType(result, UseLockResult.ActionFailure.class);
-            assertThat(lockAcquisitionFailure.cause())
+            var actionFailure = assertIsExactType(result, UseLockResult.ActionFailure.class);
+            assertThat(actionFailure.cause())
                     .isInstanceOf(UncheckedIOException.class)
                     .hasMessageContaining("I/O error")
                     .cause()
@@ -215,6 +216,106 @@ class CuratorLockHelper2Test {
                     .hasMessage("I/O error");
 
             verify(lock).acquire(1, TimeUnit.SECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verify(lock).release();
+            verifyNoMoreInteractions(lock);
+        }
+    }
+
+    @Nested
+    class UseLockWithErrorConsumer {
+
+        @Test
+        void shouldCallRunnable_WhenAcquiresLock() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(true);
+            when(lock.isAcquiredInThisProcess()).thenReturn(true);
+
+            var action = new TrackingRunnable();
+            var errorConsumer = new TrackingConsumer();
+            lockHelper.useLock(lock, 3, TimeUnit.SECONDS, action, errorConsumer);
+
+            assertThat(action.wasCalled).isTrue();
+            assertThat(errorConsumer.wasCalled).isFalse();
+
+            verify(lock).acquire(3, TimeUnit.SECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verify(lock).release();
+            verifyNoMoreInteractions(lock);
+        }
+
+        @Test
+        void shouldCallErrorConsumer_WhenLockAcquisitionFails_DueToException() throws Exception {
+            doThrow(new CannotAcquireLockException("oops, can't touch this lock"))
+                    .when(lock)
+                    .acquire(anyLong(), any(TimeUnit.class));
+
+            var action = new TrackingRunnable();
+            var errorConsumer = new TrackingConsumer();
+            lockHelper.useLock(lock, 1500, TimeUnit.MILLISECONDS, action, errorConsumer);
+
+            assertThat(action.wasCalled).isFalse();
+            assertThat(errorConsumer.wasCalled).isTrue();
+
+            var acquisitionFailure = assertIsExactType(errorConsumer.error,
+                    LockOrActionError.LockAcquisitionFailure.class);
+            var failureResult = assertIsExactType(acquisitionFailure.acquisitionResult(),
+                    LockAcquisitionFailureResult.Failure.class);
+
+            assertThat(failureResult.cause())
+                    .isExactlyInstanceOf(CannotAcquireLockException.class)
+                    .hasMessageStartingWith("oops, can't touch");
+
+            verify(lock).acquire(1500, TimeUnit.MILLISECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verifyNoMoreInteractions(lock);
+        }
+
+        @Test
+        void shouldCallErrorConsumer_WhenLockAcquisitionFails_DueToTimeout() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(false);
+            when(lock.isAcquiredInThisProcess()).thenReturn(false);
+
+            var action = new TrackingRunnable();
+            var errorConsumer = new TrackingConsumer();
+            lockHelper.useLock(lock, 750, TimeUnit.MILLISECONDS, action, errorConsumer);
+
+            assertThat(action.wasCalled).isFalse();
+            assertThat(errorConsumer.wasCalled).isTrue();
+
+            var acquisitionFailure = assertIsExactType(errorConsumer.error,
+                    LockOrActionError.LockAcquisitionFailure.class);
+            var timeoutResult = assertIsExactType(acquisitionFailure.acquisitionResult(),
+                    LockAcquisitionFailureResult.Timeout.class);
+
+            assertThat(timeoutResult.period()).isEqualTo(Duration.ofMillis(750));
+
+            verify(lock).acquire(750, TimeUnit.MILLISECONDS);
+            verify(lock).isAcquiredInThisProcess();
+            verifyNoMoreInteractions(lock);
+        }
+
+        @Test
+        void shouldCallErrorConsumer_AndReleaseLock_IfActionThrowsAnException() throws Exception {
+            when(lock.acquire(anyLong(), any(TimeUnit.class))).thenReturn(true);
+            when(lock.isAcquiredInThisProcess()).thenReturn(true);
+
+            var action = new ThrowingRunnable();
+            var errorConsumer = new TrackingConsumer();
+            lockHelper.useLock(lock, 2500, TimeUnit.MILLISECONDS, action, errorConsumer);
+
+            assertThat(errorConsumer.wasCalled).isTrue();
+
+            var actionFailure = assertIsExactType(errorConsumer.error,
+                    LockOrActionError.ActionFailure.class);
+
+            assertThat(actionFailure.cause())
+                    .isInstanceOf(UncheckedIOException.class)
+                    .hasMessageContaining("I/O error")
+                    .cause()
+                    .isInstanceOf(IOException.class)
+                    .hasMessage("I/O error");
+
+            verify(lock).acquire(2500, TimeUnit.MILLISECONDS);
             verify(lock).isAcquiredInThisProcess();
             verify(lock).release();
             verifyNoMoreInteractions(lock);
@@ -317,6 +418,19 @@ class CuratorLockHelper2Test {
         @Override
         public void run() {
             wasCalled = true;
+        }
+    }
+
+    @Getter
+    static class TrackingConsumer implements Consumer<LockOrActionError> {
+
+        boolean wasCalled;
+        LockOrActionError error;
+
+        @Override
+        public void accept(LockOrActionError error) {
+            this.wasCalled = true;
+            this.error = error;
         }
     }
 
