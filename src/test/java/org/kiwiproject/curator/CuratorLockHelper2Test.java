@@ -257,7 +257,7 @@ class CuratorLockHelper2Test {
             assertThat(errorConsumer.wasCalled).isTrue();
 
             var acquisitionFailure = assertIsExactType(errorConsumer.error,
-                    LockOrActionError.LockAcquisitionFailure.class);
+                    UseLockError.LockAcquisitionFailure.class);
             var failureResult = assertIsExactType(acquisitionFailure.acquisitionResult(),
                     LockAcquisitionFailureResult.Failure.class);
 
@@ -283,7 +283,7 @@ class CuratorLockHelper2Test {
             assertThat(errorConsumer.wasCalled).isTrue();
 
             var acquisitionFailure = assertIsExactType(errorConsumer.error,
-                    LockOrActionError.LockAcquisitionFailure.class);
+                    UseLockError.LockAcquisitionFailure.class);
             var timeoutResult = assertIsExactType(acquisitionFailure.acquisitionResult(),
                     LockAcquisitionFailureResult.Timeout.class);
 
@@ -306,7 +306,7 @@ class CuratorLockHelper2Test {
             assertThat(errorConsumer.wasCalled).isTrue();
 
             var actionFailure = assertIsExactType(errorConsumer.error,
-                    LockOrActionError.ActionFailure.class);
+                    UseLockError.ActionFailure.class);
 
             assertThat(actionFailure.cause())
                     .isInstanceOf(UncheckedIOException.class)
@@ -422,13 +422,13 @@ class CuratorLockHelper2Test {
     }
 
     @Getter
-    static class TrackingConsumer implements Consumer<LockOrActionError> {
+    static class TrackingConsumer implements Consumer<UseLockError> {
 
         boolean wasCalled;
-        LockOrActionError error;
+        UseLockError error;
 
         @Override
-        public void accept(LockOrActionError error) {
+        public void accept(UseLockError error) {
             this.wasCalled = true;
             this.error = error;
         }

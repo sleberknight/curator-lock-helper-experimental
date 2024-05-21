@@ -81,7 +81,7 @@ public class CuratorLockHelper2 {
     public void useLock(InterProcessLock lock,
                         long time, TimeUnit unit,
                         Runnable action,
-                        Consumer<LockOrActionError> errorConsumer) {
+                        Consumer<UseLockError> errorConsumer) {
 
         try {
             var acquisitionResult = acquire(lock, time, unit);
@@ -90,14 +90,14 @@ public class CuratorLockHelper2 {
                 try {
                     action.run();
                 } catch (Exception e) {
-                    errorConsumer.accept(new LockOrActionError.ActionFailure(e));
+                    errorConsumer.accept(new UseLockError.ActionFailure(e));
                 }
 
                 return;
             }
 
             var failureResult = LockAcquisitionFailureResult.fromLockAcquisitionResult(acquisitionResult);
-            errorConsumer.accept(new LockOrActionError.LockAcquisitionFailure(failureResult));
+            errorConsumer.accept(new UseLockError.LockAcquisitionFailure(failureResult));
         } finally {
             releaseLockQuietlyIfHeld(lock);
         }
