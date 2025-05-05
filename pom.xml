@@ -37,7 +37,7 @@
         <!-- Versions for optional dependencies -->
 
         <!-- Versions for test dependencies -->
-        <kiwi-test.version>3.9.0</kiwi-test.version>
+        <kiwi-test.version>3.10.0</kiwi-test.version>
 
     </properties>
 
