@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.kiwiproject</groupId>
         <artifactId>kiwi-parent</artifactId>
-        <version>3.0.26</version>
+        <version>3.0.27</version>
     </parent>
 
     <artifactId>curator-lock-helper-experimental</artifactId>
@@ -29,7 +29,7 @@
     </scm>
 
     <properties>
-        <kiwi-bom.version>2.0.26</kiwi-bom.version>
+        <kiwi-bom.version>2.0.27</kiwi-bom.version>
         <kiwi.version>4.11.1</kiwi.version>
 
         <!-- Versions for required/provided dependencies -->
