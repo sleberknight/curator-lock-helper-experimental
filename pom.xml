@@ -30,7 +30,7 @@
 
     <properties>
         <kiwi-bom.version>2.3.0</kiwi-bom.version>
-        <kiwi.version>4.14.1</kiwi.version>
+        <kiwi.version>4.15.0</kiwi.version>
 
         <!-- Versions for required/provided dependencies -->
 
