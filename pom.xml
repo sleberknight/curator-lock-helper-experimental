@@ -29,7 +29,7 @@
     </scm>
 
     <properties>
-        <kiwi-bom.version>2.3.1</kiwi-bom.version>
+        <kiwi-bom.version>3.0.1</kiwi-bom.version>
         <kiwi.version>5.0.0</kiwi.version>
 
         <!-- Versions for required/provided dependencies -->
